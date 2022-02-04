@@ -1,0 +1,45 @@
+.wrapper {
+	display: flex;
+	max-width: 1024px;
+	min-width: 320px;
+	padding: 10px 20px 20px 20px;
+	/* border-radius: 8px; */
+	background-color: #ccc;
+}
+
+#main-title {
+	padding-top: -20px;
+	font-size: 24px;
+}
+
+#notepad-title {
+	font-size: 13px;
+}
+
+#notepad-title-input {
+	width: 25%;
+}
+
+#myNotesTitle {
+	padding-top: 25px;
+	padding-bottom: 4px;
+	font-size: 18px;
+}
+
+.content-section {
+	background-color: white;
+	border-radius: 8px;
+	border: 1px solid #ccc;
+	max-width: 1004px;
+	min-width: 304px;
+	width: 100vw;
+	position: relative;
+}
+
+.form-container {
+	padding: 25px;
+}
+
+.div-right {
+	float: right;
+}
