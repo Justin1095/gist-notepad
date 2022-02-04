@@ -5,6 +5,12 @@ import NoteSection from "./common/NoteSection";
 import TopPanel from "./common/TopPanel";
 import { Note } from "./types";
 
+/*
+- add formik and submit
+- make the buttons do stuff
+- add error check
+- update types.ts
+*/
 
 const App = () => {
 	const [notes, setNotes] = useState<any>();
