@@ -7,11 +7,23 @@ const octokit = new Octokit({
 });
 const gistId = "5e82aa03b8272a6b590e773777142cea";
 
+const notesArrayToObject = (
+	notes: any[],
+	key: string,
+	shouldBeEmpty: boolean
+) => {
+	return notes.reduce((obj, item) => {
+		return {
+			...obj,
+			[item[key]]: shouldBeEmpty ? {} : item,
+		};
+	}, {});
+};
+
 export const fetchGists = async () => {
 	const reponse = await octokit.request("GET /gists/{gist_id}", {
 		gist_id: gistId,
 	});
-
 	return reponse.data;
 };
 
@@ -36,36 +48,21 @@ export const deleteGist = async (filename: string) => {
 	});
 };
 
-// Need some work
 export const deleteAllGist = async (notes: Note[]) => {
-	notes.forEach(async (note: Note) => {
-		await octokit.request("PATCH /gists/{gist_id}", {
-			gist_id: gistId,
-			files: {
-				[note.filename]: {},
-			},
-		});
+	const files = notesArrayToObject(notes, "filename", true);
+	await octokit.request(`PATCH /gists/{gist_id}`, {
+		gist_id: gistId,
+		description: "",
+		files,
 	});
 };
 
 // Need some work
 export const updateGist = async (title: string, notes: Note[]) => {
-	// console.log(notes);
-
+	const files = notesArrayToObject(notes, "filename", false);
 	await octokit.request(`PATCH /gists/{gist_id}`, {
 		gist_id: gistId,
 		description: title,
-	});
-
-	notes.forEach(async (note: Note) => {
-		await octokit.request("PATCH /gists/{gist_id}", {
-			gist_id: gistId,
-			files: {
-				[note.filename]: {
-					filename: note.filename,
-					content: note.content,
-				},
-			},
-		});
+		files,
 	});
 };

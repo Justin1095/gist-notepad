@@ -22,11 +22,12 @@ const App = () => {
 	useEffect(() => {
 		const storedTitle = JSON.parse(localStorage.getItem("notepad-title") || "");
 		const storedNotes = JSON.parse(localStorage.getItem("notepad-notes") || "");
+		const isEmpty = storedNotes.length === 0;
 
-		if (storedTitle && storedNotes) {
+		if (storedTitle && !isEmpty) {
 			setTitle(storedTitle);
 			setNotes(storedNotes);
-		} else if (storedNotes) {
+		} else if (!isEmpty) {
 			setNotes(storedNotes);
 			fetchGists().then((reponse: any) => {
 				if (reponse) {
@@ -123,6 +124,7 @@ const App = () => {
 		deleteGist(filename);
 	};
 
+	// needs work
 	const deleteAll = () => {
 		deleteAllGist(notes);
 		setNotes([]);
@@ -131,6 +133,7 @@ const App = () => {
 		setTitle("");
 	};
 
+	// needs work
 	const save = () => {
 		// do check
 		const isValid = isValidTitle(title);
