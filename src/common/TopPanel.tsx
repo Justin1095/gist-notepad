@@ -1,27 +1,28 @@
 interface Props {
-	notePadTitle: string;
+	title: string;
+	handleTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	deleteAll: () => void;
 }
 
-const TopPanel = ({ notePadTitle }: Props) => {
-	// const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-	// 	return "test";
-	// };
-
+const TopPanel = ({ title, handleTitleChange, deleteAll }: Props) => {
 	return (
 		<div>
 			<div className="row">
 				<div className="col-12">
 					<div className="div-right">
 						<button className="saveBtn">Save</button>
-						<button className="deleteBtn">Delete</button>
+						<button className="deleteBtn" onClick={deleteAll}>
+							Delete
+						</button>
 					</div>
 					<div id="notepad-title">Notepad Title</div>
 
 					<input
 						id="notepad-title-input"
 						type="text"
-						value={notePadTitle}
+						value={title}
 						placeholder="My notepad title.."
+						onChange={handleTitleChange}
 					/>
 				</div>
 			</div>
