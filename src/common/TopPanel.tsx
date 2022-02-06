@@ -1,4 +1,12 @@
-const TopPanel = () => {
+interface Props {
+	notePadTitle: string;
+}
+
+const TopPanel = ({ notePadTitle }: Props) => {
+	// const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	// 	return "test";
+	// };
+
 	return (
 		<div>
 			<div className="row">
@@ -12,6 +20,7 @@ const TopPanel = () => {
 					<input
 						id="notepad-title-input"
 						type="text"
+						value={notePadTitle}
 						placeholder="My notepad title.."
 					/>
 				</div>

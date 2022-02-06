@@ -16,12 +16,13 @@ const App = () => {
 	const [notes, setNotes] = useState<any>();
 	const [gistInfo, setGistInfo] = useState<any>();
 
+	const [notePadTitle, setNotePadTitle] = useState("");
+
 	useEffect(() => {
-		fetchNotes().then((reponse) => {
+		fetchNotes().then((reponse: any) => {
 			if (reponse) {
 				setGistInfo(reponse);
-				const notesArray = Object.entries(reponse.files);
-				setNotes(notesArray.map((note: any) => note[1]));
+				setNotes(Object.entries(reponse.files).map(([key, value]) => value));
 			}
 		});
 	}, []);
@@ -33,11 +34,17 @@ const App = () => {
 					<p id="main-title">Notepad Application</p>
 					<div className="content-section">
 						<div className="form-container">
-							<TopPanel />
+							<TopPanel notePadTitle={notePadTitle} />
 							<div id="myNotesTitle">My Notes</div>
-							<NoteSection includeAddBtn />
+							<NoteSection notes={notes} setNotes={setNotes} includeAddBtn />
 							{notes.map((note: Note) => (
-								<NoteSection values={note} includeDeleteBtn />
+								<NoteSection
+									value={note}
+									notes={notes}
+									setNotes={setNotes}
+									includeDeleteBtn
+									readOnly
+								/>
 							))}
 						</div>
 					</div>

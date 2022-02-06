@@ -23,6 +23,11 @@ textarea {
 	/* line-height: 1.4px; */
 }
 
+/* input[type="text"][disabled],
+textarea[disabled] {
+	background-color: light;
+} */
+
 button {
 	width: 5rem;
 	color: white;

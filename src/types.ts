@@ -1,8 +1,9 @@
 export interface Note {
 	filename: string;
 	type: string;
-	language: null;
-	siz?: Number;
+	language: string | null;
+	raw_url: string;
+	size?: Number;
 	truncated: boolean;
 	content: string;
 }
