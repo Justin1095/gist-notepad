@@ -2,15 +2,18 @@ interface Props {
 	title: string;
 	handleTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	deleteAll: () => void;
+	save: () => void;
 }
 
-const TopPanel = ({ title, handleTitleChange, deleteAll }: Props) => {
+const TopPanel = ({ title, handleTitleChange, deleteAll, save }: Props) => {
 	return (
 		<div>
 			<div className="row">
 				<div className="col-12">
 					<div className="div-right">
-						<button className="saveBtn">Save</button>
+						<button className="saveBtn" onClick={save}>
+							Save
+						</button>
 						<button className="deleteBtn" onClick={deleteAll}>
 							Delete
 						</button>

@@ -17,22 +17,12 @@ textarea {
 	color: #333;
 	outline-color: #ccc;
 	line-height: 20px;
-	/* font-size: 12px; */
-	/* height: 20px; */
-	/* font-weight: 400; */
-	/* line-height: 1.4px; */
 }
-
-/* input[type="text"][disabled],
-textarea[disabled] {
-	background-color: light;
-} */
 
 button {
 	width: 5rem;
 	color: white;
 	height: 2.1rem;
-	/* padding: 0.45rem 1.3rem; */
 	border-radius: 0.25rem;
 	font-size: 14px;
 	border: 1px solid transparent;

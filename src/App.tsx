@@ -1,5 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { fetchNotes } from "./Api";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+	deleteAllGist,
+	deleteGist,
+	fetchGists,
+	postGist,
+	updateGist,
+} from "./Api";
 import "./App.css";
 import NoteSection from "./common/NoteSection";
 import TopPanel from "./common/TopPanel";
@@ -7,7 +13,6 @@ import { Note } from "./types";
 
 const App = () => {
 	const [notes, setNotes] = useState<any>([]);
-	const [gistInfo, setGistInfo] = useState<any>();
 	const [title, setTitle] = useState("");
 	const [fileName, setFileName] = useState("");
 	const [content, setContent] = useState("");
@@ -15,14 +20,42 @@ const App = () => {
 	const maxNoteCharacterLimit = 1000;
 
 	useEffect(() => {
-		fetchNotes().then((reponse: any) => {
-			if (reponse) {
-				setGistInfo(reponse);
-				setTitle(reponse.description);
-				setNotes(Object.entries(reponse.files).map(([key, value]) => value));
-			}
-		});
+		const storedTitle = JSON.parse(localStorage.getItem("notepad-title") || "");
+		const storedNotes = JSON.parse(localStorage.getItem("notepad-notes") || "");
+
+		if (storedTitle && storedNotes) {
+			setTitle(storedTitle);
+			setNotes(storedNotes);
+		} else if (storedNotes) {
+			setNotes(storedNotes);
+			fetchGists().then((reponse: any) => {
+				if (reponse) {
+					setTitle(reponse.description);
+				}
+			});
+		} else {
+			fetchGists().then((reponse: any) => {
+				if (reponse) {
+					setTitle(reponse.description);
+					setNotes(Object.entries(reponse.files).map(([key, value]) => value));
+				}
+			});
+		}
 	}, []);
+
+	useEffect(() => {
+		localStorage.setItem("notepad-title", JSON.stringify(title));
+	}, [title]);
+
+	useEffect(() => {
+		localStorage.setItem("notepad-notes", JSON.stringify(notes));
+	}, [notes]);
+
+	const sortedNotes = useMemo(() => {
+		return notes.sort((a: Note, b: Note) =>
+			a.filename.localeCompare(b.filename)
+		);
+	}, [notes]);
 
 	const isValidFileName = (title: string) => {
 		const isTitleInNotes = notes?.some((note: Note) => title === note.filename);
@@ -57,11 +90,11 @@ const App = () => {
 
 	const isValidTitle = (title: string) => {
 		if (title.length > maxTitleCharacterLimit) {
-			console.log("Error! The note is over 255 characters!");
+			console.log("Error! The title is over 255 characters!");
 			return false;
 		}
 		if (title.length === 0) {
-			console.log("Error! The note cannot be blank!");
+			console.log("Error! The title cannot be blank!");
 			return false;
 		}
 
@@ -73,14 +106,12 @@ const App = () => {
 		if (isValid) {
 			const newNote = {
 				filename: fileName,
-				type: "text/plain",
-				language: null,
-				raw_url: "",
-				size: content.length,
-				truncated: false,
 				content: content,
 			};
+			postGist(newNote);
 			setNotes([...notes, newNote]);
+			setFileName("");
+			setContent("");
 		}
 	};
 
@@ -89,13 +120,23 @@ const App = () => {
 			(note: Note) => note.filename !== filename
 		);
 		setNotes(updatedNotes);
+		deleteGist(filename);
 	};
 
 	const deleteAll = () => {
+		deleteAllGist(notes);
 		setNotes([]);
 		setFileName("");
 		setContent("");
 		setTitle("");
+	};
+
+	const save = () => {
+		// do check
+		const isValid = isValidTitle(title);
+		if (isValid) {
+			updateGist(title, notes);
+		}
 	};
 
 	const handleFileNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +154,11 @@ const App = () => {
 		setTitle(e.target.value);
 	};
 
+	const handleFileName2Change = (e: React.ChangeEvent<HTMLInputElement>) => {
+		// isValidFileName(e.target.value);
+		// notes[0].fileName = e.target.value;
+	};
+
 	return (
 		<div className="wrapper">
 			<div className="container-fluid">
@@ -123,6 +169,7 @@ const App = () => {
 							title={title}
 							handleTitleChange={handleTitleChange}
 							deleteAll={deleteAll}
+							save={save}
 						/>
 						<div id="myNotesTitle">My Notes</div>
 						<NoteSection
@@ -132,12 +179,13 @@ const App = () => {
 							handleFileNameChange={handleFileNameChange}
 							handleContentChange={handleContentChange}
 						/>
-						{notes.map((note: Note) => (
+						{sortedNotes.sort().map((note: Note) => (
 							<NoteSection
+								key={note.filename}
 								fileName={note.filename}
 								content={note.content}
 								deleteNote={deleteNote}
-								handleFileNameChange={handleFileNameChange}
+								handleFileNameChange={handleFileName2Change}
 								handleContentChange={handleContentChange}
 								readOnly
 							/>
