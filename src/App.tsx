@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	deleteAllGist,
 	deleteGist,
@@ -11,84 +11,54 @@ import NoteSection from "./common/NoteSection";
 import TopPanel from "./common/TopPanel";
 import { Note } from "./types";
 
+/*
+	Future plans:
+	- I would have like to use Formik and yup validation so I can display the error messages below the text fields
+	- I need to look into displaying data from local storage
+*/
+
 const App = () => {
-	const [notes, setNotes] = useState<any>([]);
+	const [data, setData] = useState<any>([]);
+	const [notes, setNotes] = useState<Note[]>([]);
 	const [title, setTitle] = useState("");
-	const [fileName, setFileName] = useState("");
+	const [filename, setFilename] = useState("");
 	const [content, setContent] = useState("");
 	const maxTitleCharacterLimit = 255;
 	const maxNoteCharacterLimit = 1000;
 
+	// Fetches Data
 	useEffect(() => {
-		const storedTitle = JSON.parse(localStorage.getItem("notepad-title") || "");
-		const storedNotes = JSON.parse(localStorage.getItem("notepad-notes") || "");
-		const isEmpty = storedNotes.length === 0;
-
-		if (storedTitle && !isEmpty) {
-			setTitle(storedTitle);
-			setNotes(storedNotes);
-		} else if (!isEmpty) {
-			setNotes(storedNotes);
-			fetchGists().then((reponse: any) => {
-				if (reponse) {
-					setTitle(reponse.description);
-				}
-			});
-		} else {
-			fetchGists().then((reponse: any) => {
-				if (reponse) {
-					setTitle(reponse.description);
-					setNotes(Object.entries(reponse.files).map(([key, value]) => value));
-				}
-			});
-		}
+		fetchGists().then((reponse: any) => {
+			if (reponse) {
+				setTitle(reponse.description);
+				setData(Object.entries(reponse.files).map(([key, value]) => value));
+			}
+		});
 	}, []);
 
+	// Gets data and creates notes
+	useEffect(() => {
+		setNotes(
+			data.map((note: Note) => {
+				return {
+					orginalFilename: note.filename,
+					filename: note.filename,
+					content: note.content,
+				};
+			})
+		);
+	}, [data]);
+
+	// Stored data to the local storage. I'm having issues displaying it
 	useEffect(() => {
 		localStorage.setItem("notepad-title", JSON.stringify(title));
 	}, [title]);
 
 	useEffect(() => {
-		localStorage.setItem("notepad-notes", JSON.stringify(notes));
-	}, [notes]);
+		localStorage.setItem("notepad-data", JSON.stringify(data));
+	}, [data]);
 
-	const sortedNotes = useMemo(() => {
-		return notes.sort((a: Note, b: Note) =>
-			a.filename.localeCompare(b.filename)
-		);
-	}, [notes]);
-
-	const isValidFileName = (title: string) => {
-		const isTitleInNotes = notes?.some((note: Note) => title === note.filename);
-		if (isTitleInNotes) {
-			console.log("Error! The Note title needs to be unique!");
-			return false;
-		}
-		if (title.length > maxTitleCharacterLimit) {
-			console.log("Error! The note title is over 255 characters!");
-			return false;
-		}
-		if (title.length === 0) {
-			console.log("Error! The note title cannot be blank!");
-			return false;
-		}
-
-		return true;
-	};
-
-	const isValidContent = (note: string) => {
-		if (note.length > maxNoteCharacterLimit) {
-			console.log("Error! The note is over 255 characters!");
-			return false;
-		}
-		if (note.length === 0) {
-			console.log("Error! The note cannot be blank!");
-			return false;
-		}
-
-		return true;
-	};
-
+	// Validation for Title
 	const isValidTitle = (title: string) => {
 		if (title.length > maxTitleCharacterLimit) {
 			console.log("Error! The title is over 255 characters!");
@@ -102,64 +72,154 @@ const App = () => {
 		return true;
 	};
 
+	// Validation for Filename
+	const isValidFileName = (title: string, compareTitle: boolean) => {
+		const isTitleInNotes = notes.some((note: Note) => title === note.filename);
+
+		if (compareTitle) {
+			if (isTitleInNotes) {
+				console.log("Error! The Note title needs to be unique!");
+				return false;
+			}
+		}
+		if (title.length > maxTitleCharacterLimit) {
+			console.log("Error! The note title is over 255 characters!");
+			return false;
+		}
+		if (title.length === 0) {
+			console.log("Error! The note title cannot be blank!");
+			return false;
+		}
+
+		return true;
+	};
+
+	// Validation for Content
+	const isValidContent = (note: string) => {
+		if (note.length > maxNoteCharacterLimit) {
+			console.log("Error! The note is over 1000 characters!");
+			return false;
+		}
+		if (note.length === 0) {
+			console.log("Error! The note cannot be blank!");
+			return false;
+		}
+
+		return true;
+	};
+
+	// Checks if the Notes all have unique filenames
+	const checkIfNotesAreUnique = () => {
+		const filenameArray = notes.map((elm) => elm.filename);
+		return filenameArray.length === new Set(filenameArray).size;
+	};
+
+	// Adds a new note
 	const addNote = () => {
-		const isValid = isValidFileName(fileName) && isValidContent(content);
+		const isValid = isValidFileName(filename, true) && isValidContent(content);
 		if (isValid) {
 			const newNote = {
-				filename: fileName,
+				orginalFilename: filename,
+				filename: filename,
 				content: content,
 			};
 			postGist(newNote);
 			setNotes([...notes, newNote]);
-			setFileName("");
+			setFilename("");
 			setContent("");
 		}
 	};
 
+	// Deletes a note
 	const deleteNote = (filename: string) => {
 		const updatedNotes = notes.filter(
-			(note: Note) => note.filename !== filename
+			(note: Note) => note.orginalFilename !== filename
 		);
 		setNotes(updatedNotes);
 		deleteGist(filename);
 	};
 
-	// needs work
-	const deleteAll = () => {
+	// Deletes all notes
+	const deleteAllNotes = () => {
 		deleteAllGist(notes);
 		setNotes([]);
-		setFileName("");
+		setFilename("");
 		setContent("");
 		setTitle("");
 	};
 
-	// needs work
-	const save = () => {
-		// do check
-		const isValid = isValidTitle(title);
-		if (isValid) {
+	// Save notepad data
+	const saveNotes = () => {
+		const isTitleValid = isValidTitle(title);
+		const checkNotes = notes.some(
+			(note: Note) => isValidContent(note.content) === false
+		);
+		const checkFileName = notes.some(
+			(note: Note) => isValidFileName(note.filename, false) === false
+		);
+
+		if (!checkIfNotesAreUnique()) {
+			console.log("Error! The Note title needs to be unique!");
+			return null;
+		}
+
+		if (notes.length === 0) {
+			console.log("Error! At least one note is required!");
+			return null;
+		}
+
+		if (isTitleValid && !checkNotes && !checkFileName) {
 			updateGist(title, notes);
 		}
 	};
 
-	const handleFileNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		isValidFileName(e.target.value);
-		setFileName(e.target.value);
+	// Handle title changes
+	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (!isValidTitle(e.target.value)) {
+		}
+		setTitle(e.target.value);
 	};
 
+	// Handle filename changes
+	const handleFileNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		isValidFileName(e.target.value, true);
+		setFilename(e.target.value);
+	};
+
+	// Handle content changes
 	const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		isValidContent(e.target.value);
 		setContent(e.target.value);
 	};
 
-	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		isValidTitle(e.target.value);
-		setTitle(e.target.value);
+	// Handle the filenames in notes changes
+	const handleStoredFileNameChange = (
+		e: React.ChangeEvent<HTMLInputElement>
+	) => {
+		isValidFileName(e.target.value, true);
+		let array = [...notes];
+		for (let i in array) {
+			if (array[i].orginalFilename === e.target.name) {
+				array[i].filename = e.target.value;
+				setNotes(array);
+				break;
+			}
+		}
 	};
 
-	const handleFileName2Change = (e: React.ChangeEvent<HTMLInputElement>) => {
-		// isValidFileName(e.target.value);
-		// notes[0].fileName = e.target.value;
+	// Handle the content in notes changes
+	const handleStoredContentChange = (
+		e: React.ChangeEvent<HTMLTextAreaElement>
+	) => {
+		isValidContent(e.target.value);
+		let array = [...notes];
+		for (let i in array) {
+			if (array[i].orginalFilename === e.target.name) {
+				array[i].content = e.target.value;
+				setNotes(array);
+				break;
+			}
+		}
 	};
 
 	return (
@@ -171,25 +231,27 @@ const App = () => {
 						<TopPanel
 							title={title}
 							handleTitleChange={handleTitleChange}
-							deleteAll={deleteAll}
-							save={save}
+							deleteAll={deleteAllNotes}
+							save={saveNotes}
 						/>
 						<div id="myNotesTitle">My Notes</div>
 						<NoteSection
-							fileName={fileName}
+							name="blankNote"
+							filename={filename}
 							content={content}
 							addNote={addNote}
 							handleFileNameChange={handleFileNameChange}
 							handleContentChange={handleContentChange}
 						/>
-						{sortedNotes.sort().map((note: Note) => (
+						{notes.map((note: Note) => (
 							<NoteSection
-								key={note.filename}
-								fileName={note.filename}
+								name={note.orginalFilename}
+								key={note.orginalFilename}
+								filename={note.filename}
 								content={note.content}
 								deleteNote={deleteNote}
-								handleFileNameChange={handleFileName2Change}
-								handleContentChange={handleContentChange}
+								handleFileNameChange={handleStoredFileNameChange}
+								handleContentChange={handleStoredContentChange}
 								readOnly
 							/>
 						))}

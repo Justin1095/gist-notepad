@@ -1,5 +1,6 @@
 interface Props {
-	fileName: string;
+	name: string;
+	filename: string;
 	content: string;
 	addNote?: () => void;
 	deleteNote?: (filename: string) => void;
@@ -9,13 +10,13 @@ interface Props {
 }
 
 const NoteSection = ({
-	fileName,
+	name,
+	filename,
 	content,
 	addNote,
 	deleteNote,
 	handleFileNameChange,
 	handleContentChange,
-	readOnly,
 }: Props) => {
 	return (
 		<div>
@@ -23,13 +24,13 @@ const NoteSection = ({
 				<div className="col-4">
 					<input
 						type="text"
-						value={fileName}
+						name={name}
+						value={filename}
 						placeholder="Enter note title..."
-						disabled={readOnly}
 						onChange={handleFileNameChange}
 					/>
 					{deleteNote && (
-						<button className="deleteBtn" onClick={() => deleteNote(fileName)}>
+						<button className="deleteBtn" onClick={() => deleteNote(name)}>
 							Delete
 						</button>
 					)}
@@ -39,9 +40,9 @@ const NoteSection = ({
 				<div className="col-4">
 					<textarea
 						rows={4}
+						name={name}
 						value={content}
 						placeholder="Enter note..."
-						disabled={readOnly}
 						onChange={handleContentChange}
 					/>
 				</div>

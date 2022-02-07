@@ -5,8 +5,9 @@ import { Note } from "./types";
 const octokit = new Octokit({
 	auth: process.env.REACT_APP_GITHUB_GIST_ACCESS_KEY,
 });
-const gistId = "5e82aa03b8272a6b590e773777142cea";
+const gistId = "398c2f0ddbec86350ed26b769f9fb580";
 
+// Converts array to object
 const notesArrayToObject = (
 	notes: any[],
 	key: string,
@@ -20,6 +21,7 @@ const notesArrayToObject = (
 	}, {});
 };
 
+// Fetches data
 export const fetchGists = async () => {
 	const reponse = await octokit.request("GET /gists/{gist_id}", {
 		gist_id: gistId,
@@ -27,6 +29,7 @@ export const fetchGists = async () => {
 	return reponse.data;
 };
 
+// Post data
 export const postGist = async (note: Note) => {
 	await octokit.request("POST /gists/{gist_id}", {
 		gist_id: gistId,
@@ -39,6 +42,7 @@ export const postGist = async (note: Note) => {
 	});
 };
 
+// Deletes a note
 export const deleteGist = async (filename: string) => {
 	await octokit.request(`PATCH /gists/{gist_id}`, {
 		gist_id: gistId,
@@ -48,8 +52,9 @@ export const deleteGist = async (filename: string) => {
 	});
 };
 
+// Deletes all notes
 export const deleteAllGist = async (notes: Note[]) => {
-	const files = notesArrayToObject(notes, "filename", true);
+	const files = notesArrayToObject(notes, "orginalFilename", true);
 	await octokit.request(`PATCH /gists/{gist_id}`, {
 		gist_id: gistId,
 		description: "",
@@ -57,9 +62,9 @@ export const deleteAllGist = async (notes: Note[]) => {
 	});
 };
 
-// Need some work
+// Updates data
 export const updateGist = async (title: string, notes: Note[]) => {
-	const files = notesArrayToObject(notes, "filename", false);
+	const files = notesArrayToObject(notes, "orginalFilename", false);
 	await octokit.request(`PATCH /gists/{gist_id}`, {
 		gist_id: gistId,
 		description: title,
