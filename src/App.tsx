@@ -12,6 +12,8 @@ import TopPanel from "./common/TopPanel";
 import { Note } from "./types";
 
 /*
+	I hid my github access key inside a .env
+	
 	Future plans:
 	- I would have like to use Formik and yup validation so I can display the error messages below the text fields
 	- I need to look into displaying data from local storage
