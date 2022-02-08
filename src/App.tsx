@@ -171,6 +171,9 @@ const App = () => {
 
 		if (isTitleValid && !checkNotes && !checkFileName) {
 			updateGist(title, notes);
+			// I was having issues with the delete button and this line fixed the issue.
+			// It fixed it but I don't think it's a good solution and I would like to find a better one
+			setTimeout(() => window.location.reload(), 1000);
 		}
 	};
 
