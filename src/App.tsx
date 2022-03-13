@@ -18,6 +18,7 @@ import { Note } from "./types";
 	- I would have like to use Formik and yup validation so I can display the error messages below the text fields
 	- I need to look into displaying data from local storage
 	- Need to do some more testing. Probably use Jest
+	
 */
 
 const App = () => {
